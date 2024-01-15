@@ -1,0 +1,53 @@
+ext {
+    moduleName = "template-blank-project" //change me!!
+    configDirs=["configuration"]
+    compressConfigArtifact=true
+}
+project.version = 'dev.1'
+project.group = "com.github.patrickianwilson"
+
+buildscript {
+    repositories {
+        maven {
+            name = 'mavenInternal'
+            url "https://maven.pkg.jetbrains.space/inquest/p/buildtools/gradle-plugins-internal"
+            credentials {
+                username = spaceUsername
+                password = spacePassword
+            }
+        }
+        mavenCentral()
+        mavenLocal()
+    }
+    dependencies {
+        classpath "com.inquestdevops:WarblerBuildGradlePlugin:1.0.+"
+    }
+}
+project.apply plugin: "maven-publish"
+project.apply plugin: "project.files"
+
+project.group = "com.github.patrickianwilson"
+
+publishing {
+    publications {
+        Library(MavenPublication) {
+            artifactId "${project.ext.moduleName}"
+            artifact packageSrcLibconfiguration
+        }
+    }
+    repositories {
+        maven {
+            name = 'mavenInternal'
+            url "https://maven.pkg.jetbrains.space/inquest/p/buildtools/build-tools"
+            credentials {
+                username = spaceUsername
+                password = spacePassword
+            }
+        }
+        mavenLocal()
+    }
+}
+
+if (project.version == "dev.1") {
+    project.tasks.release.dependsOn("publishToMavenLocal")
+}
