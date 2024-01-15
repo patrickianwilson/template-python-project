@@ -1,6 +1,6 @@
 ext {
-    moduleName = "template-blank-project" //change me!!
-    configDirs=["configuration"]
+    moduleName = "template-python-project" //change me!!
+    configDirs=["src/main/python"]
     compressConfigArtifact=true
 }
 project.version = 'dev.1'
