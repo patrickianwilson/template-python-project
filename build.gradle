@@ -1,53 +1,68 @@
-ext {
-    moduleName = "template-python-project" //change me!!
-    configDirs=["src/main/python"]
-    compressConfigArtifact=true
-}
+apply plugin: "base"
+
 project.version = 'dev.1'
 project.group = "com.github.patrickianwilson"
 
-buildscript {
-    repositories {
-        maven {
-            name = 'mavenInternal'
-            url "https://maven.pkg.jetbrains.space/inquest/p/buildtools/gradle-plugins-internal"
-            credentials {
-                username = spaceUsername
-                password = spacePassword
-            }
-        }
-        mavenCentral()
-        mavenLocal()
-    }
-    dependencies {
-        classpath "com.inquestdevops:WarblerBuildGradlePlugin:1.0.+"
-    }
-}
-project.apply plugin: "maven-publish"
-project.apply plugin: "project.files"
-
-project.group = "com.github.patrickianwilson"
-
-publishing {
-    publications {
-        Library(MavenPublication) {
-            artifactId "${project.ext.moduleName}"
-            artifact packageSrcLibconfiguration
-        }
-    }
-    repositories {
-        maven {
-            name = 'mavenInternal'
-            url "https://maven.pkg.jetbrains.space/inquest/p/buildtools/build-tools"
-            credentials {
-                username = spaceUsername
-                password = spacePassword
-            }
-        }
-        mavenLocal()
-    }
+if (System.getenv("BUILD_NUMBER") != null) {
+    def majorVersion = "1.0" //eventually override with a lookup
+    project.version = "${majorVersion}.${System.getenv("BUILD_NUMBER")}"
 }
 
-if (project.version == "dev.1") {
-    project.tasks.release.dependsOn("publishToMavenLocal")
+if (tasks.findByPath("copyDeps") == null) {
+    tasks.create("copyDeps")
 }
+
+task([type: Exec], "fetchPipDeps", {
+    workingDir projectDir
+    commandLine 'pip', 'install', "-r", "requirements.txt", "--target", "$project.buildDir/site-packages", "--upgrade"
+    inputs.file "$projectDir/requirements.txt"
+    outputs.dir "$buildDir/site-packages"
+})
+
+tasks.copyDeps.dependsOn("fetchPipDeps")
+
+project.task([type:Zip], "packageSrcLib", {
+    if (project.ext.has("pythonSrcFolder"))
+        from project.ext.pythonSrcFolder
+    else
+        from "${project.projectDir}/src"
+    include "**/*"
+
+})
+project.configurations {
+    compile
+}
+
+project.artifacts {
+    compile project.tasks.packageSrcLib
+}
+
+
+if (tasks.findByName("pkg") == null) {
+    tasks.create("pkg").dependsOn("packageSrcLib")
+}
+
+if (tasks.findByName("test") == null) {
+    project.task([type: Exec], "test") {
+        workingDir "$projectDir/tests"
+        commandLine "python3", "-m", "pytest", "."
+
+        def envAdditions = [:]
+        envAdditions.put("PYTHONPATH", "${project.projectDir}/src:${project.buildDir}/site-packages")
+        environment << envAdditions
+
+
+        inputs.dir "$projectDir/src"
+        inputs.dir "$projectDir/tests"
+        outputs.dir "$buildDir"
+    }
+}
+
+tasks.test.dependsOn("copyDeps")
+
+
+tasks.maybeCreate("release").dependsOn "pkg"
+tasks.release.dependsOn "test"
+
+
+
