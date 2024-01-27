@@ -1,3 +1,7 @@
+project.ext {
+    entrypoints = ["main:template_python_project:main"]
+}
+
 apply plugin: "base"
 
 project.version = 'dev.1'
@@ -37,10 +41,25 @@ project.artifacts {
     compile project.tasks.packageSrcLib
 }
 
+task("entrypoints").doFirst {
+    file("$buildDir/bin").mkdirs()
+    for (entrypoint in project.ext.entrypoints) {
+        def (runscriptName,moduleName,funcName) = entrypoint.tokenize(":")
+        def f = new File("$buildDir/bin", "${runscriptName}")
+        f.text = """#!/usr/bin/python3
+from $moduleName import $funcName
 
+${funcName}()
+"""
+        f.setExecutable(true, false)
+    }
+
+}
 if (tasks.findByName("pkg") == null) {
     tasks.create("pkg").dependsOn("packageSrcLib")
 }
+
+
 
 if (tasks.findByName("test") == null) {
     project.task([type: Exec], "test") {
