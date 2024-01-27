@@ -3,7 +3,12 @@ project.ext {
 }
 
 apply plugin: "base"
+apply plugin: "maven-publish"
 
+ext {
+    moduleName = "template-python-project" //change me!!
+
+}
 project.version = 'dev.1'
 project.group = "com.github.patrickianwilson"
 
@@ -79,9 +84,29 @@ if (tasks.findByName("test") == null) {
 
 tasks.test.dependsOn("copyDeps")
 
-
 tasks.maybeCreate("release").dependsOn "pkg"
 tasks.release.dependsOn "test"
 
+publishing {
+    publications {
+        Library(MavenPublication) {
+            artifactId "${project.ext.moduleName}"
+            artifact packageSrcLib
+        }
+    }
+    repositories {
+        maven {
+            name = 'mavenInternal'
+            url "https://maven.pkg.jetbrains.space/inquest/p/buildtools/build-tools"
+            credentials {
+                username = spaceUsername
+                password = spacePassword
+            }
+        }
+        mavenLocal()
+    }
+}
 
-
+if (project.version == "dev.1") {
+    project.tasks.release.dependsOn("publishToMavenLocal")
+}
