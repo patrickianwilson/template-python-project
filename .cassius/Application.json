@@ -1,0 +1,79 @@
+{
+  "Application": {
+    "applicationId": "%%{{ModuleName}}%%",
+    "owner": "pwilson",
+    "description": "Template Application for %%{{ModuleName}}%%",
+    "ports": [
+    ],
+    "config": {
+      "config.cpu.request": "100m",
+      "config.memory.request": "256Mi"
+    },
+    "appConfig": {
+      "GOOGLE_APPLICATION_CREDENTIALS": "/opt/secrets/gcloud/data"
+    },
+    "templateId": "zero-or-one-queue-workload",
+    "templateVersion": "1.0",
+    "consumedDeployableBundles": {
+      "default": "%%{{ModuleName.lowerCase}}%%-dev"
+    }
+  },
+  "EnabledEnvironments": ["DEV"],
+  "Environments": [
+    {
+      "name": "DEV",
+      "realm": "corp",
+      "cellIds": ["us-west2-b-1"],
+      "dnsName": "%%{{ModuleName.lowerCase}}%%-dev.%%{{DnsZoneDevDomain}}%%",
+      "config": {},
+      "appConfig": {
+        "RABBIT_AUTH_URL": "http://rabbit-dev.inquestdevops.com/auth/login",
+        "RABBIT_TOKEN_URL": "http://rabbit-dev.inquestdevops.com/token"
+      }
+    },
+    {
+      "name": "PROD",
+      "realm": "prod",
+      "cellIds": ["us-west2-b-1"],
+      "dnsName": "%%{{ModuleName.lowerCase}}%%.%%{{DnsZoneProdDomain}}%%",
+      "config": {},
+      "appConfig": {
+        "RABBIT_AUTH_URL": "http://rabbit.inquestdevops.com/auth/login",
+        "RABBIT_TOKEN_URL": "http://rabbit.inquestdevops.com/token"
+      }
+    }
+
+  ],
+  "ExposedSecrets": [
+    {
+      "EnvironmentName": "DEV",
+      "SecretName": "%%{{ModuleName.lowerCase}}%%-dev-gcloud-credentials",
+      "FsPath": "opt/secrets/gcloud"
+    },
+    {
+      "EnvironmentName": "PROD",
+      "SecretName": "%%{{ModuleName.lowerCase}}%%-prod-gcloud-credentials",
+      "FsPath": "opt/secrets/gcloud"
+    },
+    {
+      "EnvironmentName": "DEV",
+      "SecretName": "%%{{ModuleName.lowerCase}}%%-dev-rabbit-admin-token",
+      "envVarName": "RABBIT_ADMIN_TOKEN"
+    },
+    {
+      "EnvironmentName": "PROD",
+      "SecretName": "%%{{ModuleName.lowerCase}}%%-prod-rabbit-admin-token",
+      "envVarName": "RABBIT_ADMIN_TOKEN"
+    },
+    {
+      "EnvironmentName": "DEV",
+      "SecretName": "%%{{ModuleName.lowerCase}}%%-dev-service-account-secret",
+      "envVarName": "SVC_ACCOUNT_SECRET"
+    },
+    {
+      "EnvironmentName": "PROD",
+      "SecretName": "%%{{ModuleName.lowerCase}}%%-prod-service-account-secret",
+      "envVarName": "SVC_ACCOUNT_SECRET"
+    }
+  ]
+}
