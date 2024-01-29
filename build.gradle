@@ -1,6 +1,10 @@
 apply plugin: "base"
 apply plugin: "maven-publish"
 
+ext {
+    moduleName = "template-python-project" //change me!!
+
+}
 project.version = 'dev.1'
 project.group = "com.github.patrickianwilson"
 
