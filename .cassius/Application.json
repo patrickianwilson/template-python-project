@@ -24,7 +24,6 @@
       "name": "DEV",
       "realm": "corp",
       "cellIds": ["us-west2-b-1"],
-      "dnsName": "%%{{ModuleName.lowerCase}}%%-dev.%%{{DnsZoneDevDomain}}%%",
       "config": {},
       "appConfig": {
         "RABBIT_AUTH_URL": "http://rabbit-dev.inquestdevops.com/auth/login",
@@ -35,7 +34,6 @@
       "name": "PROD",
       "realm": "prod",
       "cellIds": ["us-west2-b-1"],
-      "dnsName": "%%{{ModuleName.lowerCase}}%%.%%{{DnsZoneProdDomain}}%%",
       "config": {},
       "appConfig": {
         "RABBIT_AUTH_URL": "http://rabbit.inquestdevops.com/auth/login",
